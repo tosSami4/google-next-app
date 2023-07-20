@@ -1,63 +1,131 @@
-import { XIcon, MicrophoneIcon, SearchIcon } from "@heroicons/react/solid";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import Avatar from "./Avatar";
-import HeaderOptions from "./HeaderOptions";
+import React, { useState ,useEffect} from 'react'
+import Image from 'next/image'
 
-export default function Header() {
+
+import { BiMenu, BiSearch, BiSolidShoppingBagAlt } from 'react-icons/bi';
+import { useRouter } from 'next/router';
+import { useStateValue } from '@/Store/Store';
+
+import Link from 'next/link';
+
+import { auth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+
+
+function Header() {
+  const [{ basket,user },] = useStateValue();
+
+
+
+
+  
+  const [{}, dispatch] = useStateValue();
+
+
   const router = useRouter();
-  const [searchInput, setSearchInput] = useState(router.query.term);
 
-  function search(e) {
-    e.preventDefault();
-    if (!searchInput) return;
-    router.push(`/search?term=${searchInput}`);
+
+  useEffect(() => {
+    auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        dispatch({
+          type: "SET_USER",
+          user: authUser,
+        });
+      } else {
+        dispatch({
+          type: "SET_USER",
+          user: null,
+        });
+      }
+    });
+  }, []);
+
+
+
+
+  const add =()=>{
+router.push('/')
   }
 
+  const ord =()=>{
+    router.push('/orders')
+      }
+    
+
+
+  
+  const handleAuthenticaton = () => {
+    if (user)
+  auth.signOut()
+  }
+
+
+
+  
+
+
+
+
+
+  
   return (
-    <header className="sticky top-0 bg-white dark:bg-primary-dark dark:text-white font-sans">
-      <div className="flex w-full p-6 items-center justify-between">
-        <div className="flex items-center flex-col sm:flex-row w-full ">
-          <img
-            src="./soon1.webp"
+     <div>
+
+  <div className="  w-full h-full justify-between md:w-screen items-center  flex bg-black "  >  
+    <div   className=" :" onClick={add}>
+        <Image
+            width={150}
             height={40}
-            width={120}
-            className="cursor-pointer"
-            onClick={() => router.push("/")}
-            alt="Google"
-          />
+            src="/soon.png"
+            alt="amazon/logo"
+            className="cursor-pointer p-4 "
+          />  
 
-          <form className="flex w-full px-6 py-3 mt-5 sm:mt-0 sm:ml-10 sm:mr-5 border-gray-200 rounded-full shadow-md max-w-3xl flex-grow items-center dark:bg-secondary-dark">
-            <input
-              type="text"
-              // ref={searchInputRef}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search..."
-              className="flex-grow w-full focus:outline-none dark:bg-secondary-dark"
-            />
+           </div>
+      
+          <input type='text' className='items-end flex-1 bg-stone-50 sm:flex hidden hover:bg-orange-400' />
+           
+           <BiSearch  className='bg-waite w-200 h-7  hidden sm:flex  bg-orange-500 font-extrabold'/>
+          <div className=' flex  mr-2 m-2 py-2 text-white'>
+          <Link href={!user ?"/login" :'/login'}>
+          <div  className='m-1 'onClick={handleAuthenticaton}>
+            <button  className='d flex m-2'> {user ? "Sign Out" : "Sign In"}</button>
+            <button className='flex 1-2' > Hello {user?.email}</button>
 
-            {searchInput && (
-              <XIcon
-                className="h-6 sm:mr-3 text-gray-500 cursor-pointer transition duration-100 transform hover:scale-110"
-                onClick={() => setSearchInput("")}
-              />
-            )}
-
-            <MicrophoneIcon className="mr-3 h-6 hidden sm:inline-flex text-blue-500 border-l-2 pl-4 border-gray-400 cursor-pointer" />
-
-            <button type="submit" onClick={search}>
-              <SearchIcon className="h-6 text-blue-500 pl-2 cursor-pointer" />
-            </button>
-          </form>
+          </div>
+          </Link>
+          
+          
+     
+          
+        <div className= 'm-1  ' onClick={ord}>
+          <button className='f flex m-2'>returns</button>
+          <button className='flex m-2'>orders</button>
         </div>
+          
+          <div className=' m-1 ' onClick={()=>router.push('/checkout')}>
+        
+            <BiSolidShoppingBagAlt  className=' flex m-2'/>
+            <button className='flex m-2 pt-2 '>{basket.length}</button>
+            
+          </div>
+        
+             </div>
 
-        <div className="hidden sm:inline-flex">
-          <Avatar className="ml-auto" url="/img/profile.jpg" />
-        </div>
       </div>
-      <HeaderOptions />
-    </header>
-  );
+      <div className='bg- bg-slate-400 h-full  w-full  flex'>
+        <span className='flex  p-2'>
+          <BiMenu className='h-6  mt-2 object-cover'/>
+          <span  className=' m-2 ml-2 mr-2'>All</span>
+        </span>
+        <span className='link m-4'>Prime Video</span>
+        <span className='link m-4'>Amazon Bussiness</span>
+        <span className='link m-4'>Today's Deats</span>
+        <span className='link hidden lg:inline-flex m-4'>Electronics</span>
+      </div>
+    </div>
+  )
 }
+
+export default Header
